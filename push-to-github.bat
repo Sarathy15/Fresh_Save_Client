@@ -2,7 +2,7 @@
 title Push FreshSave AI to GitHub
 echo ========================================================
 echo  Pushing FreshSave AI (main branch) to GitHub
-echo  Repository: https://github.com/gokul2v6-ux/customer.git
+echo  Repository: https://github.com/Sarathy15/Fresh_Save_Client.git
 echo ========================================================
 echo.
 cd /d "%~dp0"
