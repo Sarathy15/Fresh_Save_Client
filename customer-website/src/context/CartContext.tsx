@@ -19,6 +19,7 @@ interface CartContextType {
   lastAddedProduct: Product | null
   showToast: boolean
   dismissToast: () => void
+  getEffectiveUnitPrice: (product: Product, qty: number) => number
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -90,13 +91,27 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0)
 
+  /**
+   * Returns the effective unit price for an item, respecting bulk pricing.
+   * Priority: bulk_price (if qty threshold met) > discount_price > base_price
+   */
+  const getEffectiveUnitPrice = (product: import("../types").Product, qty: number): number => {
+    if (
+      product.bulk_price != null &&
+      product.bulk_min_qty != null &&
+      qty >= product.bulk_min_qty
+    ) {
+      return product.bulk_price
+    }
+    return product.discount_price && product.discount_price > 0
+      ? product.discount_price
+      : product.base_price
+  }
+
   const subtotal = Number(
     items
       .reduce((sum, item) => {
-        const unitPrice =
-          item.product.discount_price && item.product.discount_price > 0
-            ? item.product.discount_price
-            : item.product.base_price
+        const unitPrice = getEffectiveUnitPrice(item.product, item.quantity)
         return sum + unitPrice * item.quantity
       }, 0)
       .toFixed(2)
@@ -132,6 +147,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         lastAddedProduct,
         showToast,
         dismissToast,
+        getEffectiveUnitPrice,
       }}
     >
       {children}

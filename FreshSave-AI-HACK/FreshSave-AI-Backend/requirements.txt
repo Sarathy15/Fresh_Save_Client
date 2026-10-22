@@ -3,3 +3,4 @@ uvicorn[standard]>=0.30
 pymongo>=4.13
 dnspython>=2.6
 pydantic-settings>=2.4
+gunicorn>=22.0.0

@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: freshsave-ai-backend
+    runtime: python
+    rootDir: FreshSave-AI-Backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: MONGODB_URI
+        sync: false
+      - key: DATABASE_NAME
+        value: freshsave_ai
+      - key: FRONTEND_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false

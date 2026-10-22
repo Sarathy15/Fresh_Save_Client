@@ -21,6 +21,9 @@ export interface Product {
   active: boolean
   created_at?: string
   updated_at?: string
+  // Bulk / tiered pricing set by retailer
+  bulk_min_qty?: number | null   // minimum qty to trigger bulk price (e.g. 3)
+  bulk_price?: number | null     // price per unit when buying bulk_min_qty or more
 }
 
 export interface AnalyticsData {

@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.config import settings
 from app.database import close_mongo_connection, connect_to_mongo, ping_database
 from app.routers import products, deals, orders, packages, analytics
 
@@ -25,19 +26,30 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Local development origins for Vite and React apps
+# Origins for development and production
+allowed_origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:5174",
+    "http://127.0.0.1:5174",
+    "http://localhost:5175",
+    "http://127.0.0.1:5175",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+# Add custom production frontend URLs from environment variables
+for env_val in [settings.frontend_url, settings.cors_origins]:
+    if env_val:
+        for origin in env_val.split(","):
+            cleaned = origin.strip().rstrip("/")
+            if cleaned and cleaned not in allowed_origins:
+                allowed_origins.append(cleaned)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:5174",
-        "http://127.0.0.1:5174",
-        "http://localhost:5175",
-        "http://127.0.0.1:5175",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],
+    allow_origins=allowed_origins,
+    allow_origin_regex=r"https:\/\/.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

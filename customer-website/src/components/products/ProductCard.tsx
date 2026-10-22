@@ -21,7 +21,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
   const fallbackImage =
     "https://images.unsplash.com/photo-1542838132-92c53300491e?w=500&auto=format&fit=crop&q=80"
 
-  const finalPrice = product.discount_price || product.base_price
+  // Bulk pricing
+  const hasBulk =
+    product.bulk_price != null &&
+    product.bulk_min_qty != null &&
+    product.bulk_min_qty > 1
+  const bulkActive = hasBulk && quantityInCart >= (product.bulk_min_qty ?? 0)
+
+  // Effective display price
+  const baseEffectivePrice = product.discount_price || product.base_price
+  const finalPrice = bulkActive ? product.bulk_price! : baseEffectivePrice
   const hasDiscount = product.discount_percent > 0 && product.discount_price < product.base_price
   const isOutOfStock = product.stock <= 0
 
@@ -38,6 +47,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
           <span className="bg-green-700 text-lime-200 text-[10px] font-bold px-2 py-0.5 rounded-md shadow-xs flex items-center gap-1">
             <Sparkles className="w-2.5 h-2.5" />
             Smart Deal
+          </span>
+        )}
+        {hasBulk && (
+          <span className="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-md shadow-xs">
+            Buy {product.bulk_min_qty}+ @ ₹{product.bulk_price} each
           </span>
         )}
       </div>
@@ -109,16 +123,35 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onQuickView }
 
         {/* Pricing & Stock */}
         <div className="mt-3 pt-2.5 border-t border-gray-50">
-          <div className="flex items-baseline gap-2 mb-2">
-            <span className="text-base font-bold text-gray-950 font-sans">
+          <div className="flex items-baseline gap-2 mb-1">
+            <span className={`text-base font-bold font-sans ${
+              bulkActive ? "text-blue-700" : "text-gray-950"
+            }`}>
               ₹{finalPrice}
             </span>
-            {hasDiscount && (
+            {hasDiscount && !bulkActive && (
               <span className="text-xs text-gray-400 line-through">
                 ₹{product.base_price}
               </span>
             )}
+            {bulkActive && (
+              <span className="text-xs text-gray-400 line-through">
+                ₹{baseEffectivePrice}
+              </span>
+            )}
           </div>
+          {/* Bulk deal active indicator */}
+          {bulkActive && (
+            <p className="text-[11px] text-blue-700 font-semibold mb-1 flex items-center gap-1">
+              🎉 Bulk price applied!
+            </p>
+          )}
+          {/* Nudge when close to bulk threshold */}
+          {hasBulk && !bulkActive && quantityInCart > 0 && (
+            <p className="text-[11px] text-blue-600 font-medium mb-1">
+              Add {(product.bulk_min_qty ?? 0) - quantityInCart} more for ₹{product.bulk_price} each!
+            </p>
+          )}
 
           {/* Stock Indicator */}
           {product.stock <= 10 && product.stock > 0 && (
